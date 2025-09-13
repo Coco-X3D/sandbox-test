@@ -69,56 +69,11 @@ def print_colored_guess(guess, feedback):
     print(colored_output)
 
 # Finally, I need to give a prompt (A-Z) to the user, and let them know which gussed letter is not in the answer
-class LetterTracker:
-    '''Track the status of each letter and display the used letters'''
-   
-    def __init__(self):
-        # initialize all letters to None (not used)
-        self.letter_status = {letter: None for letter in 'abcdefghijklmnopqrstuvwxyz'}
-    
-    def update_status(self, guess, feedback):
-        """change the status of letters based on the latest guess and feedback"""
-        for letter, status in zip(guess, feedback):
 
-            letter_lower = letter.lower()
-            current_status = self.letter_status[letter_lower]
-            
-            if status == 'H': 
-                self.letter_status[letter_lower] = 'H'
-            elif status == 'P': 
-                self.letter_status[letter_lower] = 'P'
-            elif status == 'M':
-                self.letter_status[letter_lower] = 'M'
-    
-    def get_letter_display(self, letter):
-        """get the display string for a letter based on its status"""
-        status = self.letter_status[letter]
-        if status == 'H':
-            return f"{Colors.HIT} {letter.upper()} {Colors.RESET}"
-        elif status == 'P':
-            return f"{Colors.PRESENT} {letter.upper()} {Colors.RESET}"
-        elif status == 'M':
-            return f"{Colors.MISS_TRACKER} {letter.upper()} {Colors.RESET}"
-        else:
-            return f" {letter.upper()} "
-            
-    def display_alphabet(self):
-        """show the current status of all letters in the alphabet"""
-        print(f"\n{Colors.BOLD}status of all letters:{Colors.RESET}")
-        print("⎯" * 40)
-        
-        alphabet = 'abcdefghijklmnopqrstuvwxyz'
-        for i in range(0, len(alphabet), 13):
-            row = alphabet[i:i+13]
-            row_display = ""
-            for letter in row:
-                row_display += self.get_letter_display(letter)
-            print(row_display)
-        print("⎯" * 40)
 
-    def get_serialized_status(self):
-        """获取可序列化的字母状态（用于网络传输）"""
-        return self.letter_status
+    # def get_serialized_status(self):
+    #     """获取可序列化的字母状态（用于网络传输）"""
+    #     return self.letter_status
 
 class WordleServer:
     def __init__(self, host='localhost', port=8800):
@@ -149,7 +104,7 @@ class WordleServer:
             'answer': answer,
             'attempts': 0,
             'max_attempts':max_attempts,
-            'letter_tracker': LetterTracker(),
+            # 'letter_tracker': LetterTracker(),
             'game_over': False
         }
         
@@ -166,7 +121,7 @@ class WordleServer:
             return "ERROR:Game over"
             
         # validate guess
-        session['letter_tracker'].display_alphabet()
+        # session['letter_tracker'].display_alphabet()
         guess = guess.lower().strip()
         try:
             is_5_english_word(guess, self.word_list)
@@ -185,8 +140,8 @@ class WordleServer:
                 feedback.append('P')  # Present
             else:
                 feedback.append('M')  # Miss
-        print_colored_guess(guess, feedback)
-        session['letter_tracker'].update_status(guess, feedback)
+        # print_colored_guess(guess, feedback)
+        # session['letter_tracker'].update_status(guess, feedback)
         
         # check win/lose conditions
         if guess == answer:
@@ -198,15 +153,15 @@ class WordleServer:
         else:
             return f"FEEDBACK:{''.join(feedback)}"
 
-    def get_status(self, session_id):
-        """获取字母状态"""
-        session = self.sessions.get(session_id)
-        if not session:
-            return "ERROR:Invalid session"
+    # def get_status(self, session_id):
+    #     """获取字母状态"""
+    #     session = self.sessions.get(session_id)
+    #     if not session:
+    #         return "ERROR:Invalid session"
         
-        # 获取可序列化的字母状态
-        letter_status = session['letter_tracker'].get_serialized_status()
-        return f"STATUS:{json.dumps(letter_status)}"
+    #     # 获取可序列化的字母状态
+    #     letter_status = session['letter_tracker'].get_serialized_status()
+    #     return f"STATUS:{json.dumps(letter_status)}"
     
     def cleanup_session(self, session_id):
         """删除会话以释放资源"""
@@ -238,11 +193,11 @@ class WordleServer:
                         guess = data[6:]
                         response = self.process_guess(session_id, guess)
                         
-                elif data == "STATUS":
-                    if not session_id:
-                        response = "ERROR:No active session"
-                    else:
-                        response = self.get_status(session_id)
+                # elif data == "STATUS":
+                #     if not session_id:
+                #         response = "ERROR:No active session"
+                #     else:
+                #         response = self.get_status(session_id)
                         
                 elif data == "QUIT":
                     response = "BYE"
