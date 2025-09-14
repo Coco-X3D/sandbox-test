@@ -22,15 +22,16 @@ class Colors:
     MISS_TRACKER = BG_WHITE + BLACK
 
 class WordleTCPClient:
+    # TCP client to interact with the Wordle server
     def __init__(self, host='localhost', port=8800):
         self.host = host
         self.port = port
         self.socket = None
         self.session_id = None
         self.is_connected = False
-        # self.letter_tracker = LetterTracker()
     
     def connect(self):
+        # Connect to the server
         try:
             self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             self.socket.connect((self.host, self.port))
@@ -43,6 +44,7 @@ class WordleTCPClient:
             return False
     
     def send_command(self, command):
+        # Send a command to the server and receive the response
         if not self.is_connected:
             print("Not connected to server.")
             return None
@@ -56,6 +58,7 @@ class WordleTCPClient:
             return None
         
     def start_game(self):
+        # Start a new game session
         response = self.send_command("START")
         if response and response.startswith("SESSION:"):
             self.session_id = response[8:]
@@ -66,6 +69,7 @@ class WordleTCPClient:
             return False
     
     def make_guess(self, guess):
+        # Make a guess in the current session, and forwawrd it to server for processing
         if not self.session_id:
             print("No active session. Please start a game first.")
             return None
@@ -75,19 +79,12 @@ class WordleTCPClient:
         return response
     
     def quit_game(self):
+        # Quit the current game session
         response = self.send_command("QUIT")
         self.socket.close()
         self.is_connected = False
         return response
     
-    # def get_status(self):
-    #     """获取字母状态"""
-    #     if not self.session_id:
-    #         print("No active session. Please start a game first.")
-    #         return None
-        
-    #     response = self.send_command("STATUS")
-    #     return response
 
 
 
@@ -150,38 +147,8 @@ def print_colored_guess(guess, feedback):
             colored_output += f"{Colors.MISS} {letter} {Colors.RESET}"
     print(colored_output)
 
-# def display_letter_status(letter_status_str):
-#     """显示字母状态"""
-#     if letter_status_str.startswith("STATUS:"):
-#         try:
-#             letter_data = json.loads(letter_status_str[7:])
-#             print("\n📊 Letter Status:")
-#             print("⎯" * 40)
-            
-#             # 按状态分类显示
-#             correct = [l.upper() for l, s in letter_data.items() if s == 'H']
-#             present = [l.upper() for l, s in letter_data.items() if s == 'P']
-#             missing = [l.upper() for l, s in letter_data.items() if s == 'M']
-#             unused = [l.upper() for l, s in letter_data.items() if s is None]
-            
-#             if correct:
-#                 print(f"✅ Correct: {', '.join(sorted(correct))}")
-#             if present:
-#                 print(f"🟨 Present: {', '.join(sorted(present))}")
-#             if missing:
-#                 print(f"⬜ Missing: {', '.join(sorted(missing))}")
-#             if unused:
-#                 print(f"🔲 Unused: {', '.join(sorted(unused))}")
-                
-#             print("⎯" * 40)
-#         except:
-#             print("❌ Failed to parse letter status")
-
-
-
-
 def main():
-    """客户端主函数"""
+    """Client main function to run the game loop"""
     print("=" * 50)
     print("🎯 Wordle Game - TCP Client Mode")
     print("=" * 50)
@@ -189,28 +156,29 @@ def main():
     print("The answer is on the server side, not in this client!")
     print("=" * 50)
     
-    # 创建客户端实例
+    # create client instance in local PC
     client = WordleTCPClient('localhost', 8800)
     
-    # 连接到服务器
+    # connect to server
     if not client.connect():
         print("💡 Tip: Make sure the server is running on port 8800")
         return
     
-    # 开始游戏
+    # strart a new game session
     if not client.start_game():
         return
-    
-    print("\n🎮 Game started! You have 6 attempts to guess the word.")
-    print("💡 Commands:")
-    print("  - Enter a 5-letter word to guess")
-    # print("  - 'status' - show letter status")
-    print("  - 'quit' - exit game")
-    print("-" * 50)
-    
+
     attempt_count = 0
     MAX_ATTEMPTS = 6
     letter_tracker = LetterTracker()
+    
+    print(f"\n🎮 Game started! You have {MAX_ATTEMPTS} attempts to guess the word.")
+    print("💡 Commands:")
+    print("  - Enter a 5-letter word to guess")
+    print("  - 'quit' - exit game")
+    print("-" * 50)
+    
+    
 
     while attempt_count < MAX_ATTEMPTS:
         letter_tracker.display_alphabet()
@@ -220,12 +188,6 @@ def main():
             client.quit_game()
             print("👋 Game ended")
             break
-            
-        # if guess == 'status':
-        #     status = client.get_status()
-        #     if status:
-        #         display_letter_status(status)
-        #     continue
             
         try:
             if len(guess) != 5 or not guess.isalpha():
@@ -248,22 +210,18 @@ def main():
                 break
             elif response.startswith("ERROR:"):
                 print(f"❌ Error: {response[6:]}")
-                continue  # 不增加attempt_count
+                continue
             elif response.startswith("FEEDBACK:"):
                 feedback = list(response[9:])
                 letter_tracker.update_status(guess, feedback)
                 print_colored_guess(guess, feedback)
-                attempt_count += 1  # 只有成功提交猜测才增加计数
+                attempt_count += 1  # only successful valid attempts count
                 
         except Exception as e:
             print(f"❌ Error processing guess: {e}")
             continue
 
-    
 
-
-
-    
 
     print("\n" + "=" * 50)
     print("Game ended. Thanks for playing!")
