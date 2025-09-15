@@ -43,6 +43,8 @@ python main_q1.py
 Step 1: Start the Server
 ```bash
 # Open a new cmd/powershell window for running server
+# Set the number of attempts in main()
+
 # Please note that the standrad game server is created by the following lines in main():
 #    server = WordleServer(host='localhost', max_attempt=6, port=8800)
 #    server.start_server()
@@ -50,4 +52,91 @@ Step 1: Start the Server
 python server.py
 ```
 
-### 
+Step 2: Connect the Client
+```bash
+# Open a new cmd/powershell window for client side
+
+python client.py
+```
+
+
+
+### An example in client side
+'''
+E:\sandbox-test>python client.py
+==================================================
+🎯 Wordle Game - TCP Client Mode
+==================================================
+This is CLIENT mode - connecting to remote server
+The answer is on the server side, not in this client!
+==================================================
+Connected to server at localhost:8800
+Game started. Session ID: 0cd5bc11
+
+🎮 Game started! You have 6 attempts to guess the word.
+💡 Commands:
+  - Enter a 5-letter word to guess
+  - 'quit' - exit game
+--------------------------------------------------
+
+status of all letters:
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+ A  B  C  D  E  F  G  H  I  J  K  L  M
+ N  O  P  Q  R  S  T  U  V  W  X  Y  Z
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+💡 Attempt 1/6: Enter your 5-letter guess: abuse
+ A  B  U  S  E
+
+status of all letters:
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+ A  B  C  D  E  F  G  H  I  J  K  L  M
+ N  O  P  Q  R  S  T  U  V  W  X  Y  Z
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+💡 Attempt 2/6: Enter your 5-letter guess: right
+ R  I  G  H  T
+
+status of all letters:
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+ A  B  C  D  E  F  G  H  I  J  K  L  M
+ N  O  P  Q  R  S  T  U  V  W  X  Y  Z
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+💡 Attempt 3/6: Enter your 5-letter guess: urban
+ U  R  B  A  N
+
+status of all letters:
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+ A  B  C  D  E  F  G  H  I  J  K  L  M
+ N  O  P  Q  R  S  T  U  V  W  X  Y  Z
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+💡 Attempt 4/6: Enter your 5-letter guess: opose
+❌ Error: Input word must be a 5-letter English word
+
+status of all letters:
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+ A  B  C  D  E  F  G  H  I  J  K  L  M
+ N  O  P  Q  R  S  T  U  V  W  X  Y  Z
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+💡 Attempt 4/6: Enter your 5-letter guess: upper
+ U  P  P  E  R
+
+status of all letters:
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+ A  B  C  D  E  F  G  H  I  J  K  L  M
+ N  O  P  Q  R  S  T  U  V  W  X  Y  Z
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+💡 Attempt 5/6: Enter your 5-letter guess: watch
+ W  A  T  C  H
+
+status of all letters:
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+ A  B  C  D  E  F  G  H  I  J  K  L  M
+ N  O  P  Q  R  S  T  U  V  W  X  Y  Z
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+💡 Attempt 6/6: Enter your 5-letter guess: lucky
+😢 You've used all attempts!
+😢 GAME OVER! The word was: VIVID
+
+==================================================
+Game ended. Thanks for playing!
+==================================================
+''' 
