@@ -14,7 +14,8 @@ def load_word_list():
     word_list = np.loadtxt('./common_words.txt', dtype=str)
     word_list_lower = np.char.lower(word_list)
     mask = np.array([len(word) == 5 and word.isalpha() for word in word_list_lower])
-    five_letter_words = word_list_lower[mask]
+    five_letter_words_tmp = word_list_lower[mask]
+    five_letter_words = [str(word) for word in five_letter_words_tmp]
     return five_letter_words
 
 def is_5_english_word(word, word_list):
@@ -70,6 +71,8 @@ class WordleServer:
         self.running = False
         self.max_attempt = max_attempt
 
+
+
     def load_word_list(self):
         try:
             self.word_list = load_word_list()
@@ -77,7 +80,7 @@ class WordleServer:
             print(f"Error loading word list: {e}")
             raise
 
-    def create_session(self, max_attempts=self.max_attempt):
+    def create_session(self):
         """create a new game session and return the session ID"""
        
         session_id = str(uuid.uuid4())[:8]  
@@ -89,12 +92,16 @@ class WordleServer:
         self.sessions[session_id] = {
             'answer': answer,
             'attempts': 0,
-            'max_attempts':max_attempts,
+            'max_attempts':self.max_attempt,
             'game_over': False
         }
         
         print(f"Created session {session_id} with answer: {answer}")
         return session_id
+    
+    def get_max_attempt(self, session_id):
+        # synthesize max attempts in client side
+        return f"{self.max_attempt}"
     
     def process_guess(self, session_id, guess):
         """return feedback for a guess in a session"""
@@ -172,8 +179,12 @@ class WordleServer:
                 elif data == "QUIT":
                     response = "BYE"
                     break
+                elif data == "MAX_ITER":
+                    response = self.get_max_attempt(session_id)
+
                 else:
                     response = "ERROR:Invalid command"
+                
                 
                 # send response back to the client
                 client_socket.sendall(response.encode('utf-8'))
@@ -222,6 +233,142 @@ class WordleServer:
         server_socket.close()
         print("Server stopped")
 
+
+
+class CheatingWordleServer(WordleServer):
+    def __init__(self, host='localhost', max_attempt = 6, num_candidates=10, port=8800):
+        super().__init__(host, max_attempt, port)
+        self.num_candidates = num_candidates  # the number of candidate words to maintain
+        self.candidates =  [] 
+        self.current_answer = None 
+        
+    def create_session(self, max_attempts=6):
+        session_id = str(uuid.uuid4())[:8]
+        
+        # randomly select initial candidates from the word list
+        self.candidates = random.sample(list(self.word_list), self.num_candidates) 
+        self.current_answer = None
+        
+        self.sessions[session_id] = {
+            'answer': None, 
+            'attempts': 0,
+            'max_attempts': self.max_attempt,
+            'game_over': False,
+            'candidates': self.candidates.copy(), 
+            'previous_feedbacks': [], 
+            'final_answer': None 
+        }
+        
+        print(f"Created cheating session {session_id} with {len(self.candidates)} candidates")
+        print(f"Initial candidates ({len(self.candidates)}): {self.candidates}")
+        return session_id
+    
+    def calculate_score(self, guess, candidate):
+        """calcualte scores of candidates against the guess"""
+        feedback = []
+        hit_count = 0
+        present_count = 0
+        
+        for i in range(5):
+            if guess[i] == candidate[i]:
+                feedback.append('H')
+                hit_count += 1
+            elif guess[i] in candidate:
+                feedback.append('P')
+                present_count += 1
+            else:
+                feedback.append('M')
+        return (hit_count, present_count), feedback
+
+    def find_worst_candidates(self, guess, current_candidates):
+        """find the worst candidates based on the guess"""
+        candidate_scores = {}
+        
+        for candidate in current_candidates:
+            score, feedback = self.calculate_score(guess, candidate)
+            candidate_scores.setdefault(score, []).append((candidate, feedback))
+        
+        # find the minimum score
+        min_score = min(candidate_scores.keys())
+        return candidate_scores[min_score], min_score
+    
+    def generate_cheating_feedback(self, guess, session):
+        """cheating feedback generation"""
+        current_candidates = session['candidates']
+        
+        if not current_candidates:
+            # if no candidates left, fallback to a random word from the word list
+            fallback_answer = random.choice(list(self.word_list))
+            feedback = self.calculate_score(guess, fallback_answer)[1]
+            return feedback, fallback_answer
+        
+        # find the worst candidates based on the guess
+        worst_candidates, worst_score = self.find_worst_candidates(guess, current_candidates)
+        
+        print(f"📊 Worst score (H, P): {worst_score}, Candidates: {len(worst_candidates)}")
+        new_candidates = [candidate for candidate, _ in worst_candidates]   
+        
+        # randomly select one of the worst candidates to use as feedback
+        selected_candidate, feedback = random.choice(worst_candidates)
+        
+        session['candidates'] = new_candidates
+        session['previous_feedbacks'].append((guess, feedback))
+        
+        print(f"🔍 Candidates reduced to {len(new_candidates)}")
+        if len(new_candidates) <= 5:  # only display when candidates are few
+            print(f"   Remaining: {new_candidates}")
+        
+        return feedback, selected_candidate
+
+    def process_guess(self, session_id, guess):
+        session = self.sessions.get(session_id)
+        if not session:
+            return "ERROR:Invalid session"
+            
+        if session['game_over']:
+            return "ERROR:Game over"
+            
+        # guess validation
+        guess = guess.lower().strip()
+        try:
+            is_5_english_word(guess, self.word_list)
+        except ValueError as ve:
+            return f"ERROR:{str(ve)}"
+
+        session['attempts'] += 1
+        
+        # obtain cheating feedback
+        feedback, used_candidate = self.generate_cheating_feedback(guess, session)
+        
+        # check win/lose conditions
+        remaining_candidates = session['candidates']
+        
+        if len(remaining_candidates) == 1:
+            # if there is only one candidate left, lock it as the final answer
+            session['final_answer'] = remaining_candidates[0]
+            session['answer'] = remaining_candidates[0]
+            print(f"🔒 Final answer locked: {remaining_candidates[0]}")
+        
+        if guess == used_candidate:
+            session['game_over'] = True
+            session['answer'] = used_candidate
+            return "WIN"
+        elif session['attempts'] >= session['max_attempts']:
+            session['game_over'] = True
+            # identify the final answer
+            if session.get('final_answer'):
+                final_answer = session['final_answer']
+            elif remaining_candidates:
+                final_answer = random.choice(remaining_candidates)
+            else:
+                final_answer = used_candidate
+            
+            session['answer'] = final_answer
+            return f"LOSE:{final_answer}"
+        else:
+            return f"FEEDBACK:{''.join(feedback)}"
+
+
 def main():
     print("=" * 50)
     print("Wordle Game - TCP Server Mode")
@@ -229,8 +376,11 @@ def main():
     print("This is SERVER mode - clients will connect to this server")
     print("The answer is generated and validated on the server side")
     print("=" * 50)
-    server = WordleServer(host='localhost', max_attempt=6, port=8800)
-    server.start_server()
+    # server = WordleServer(host='localhost', max_attempt=6, port=8800)
+    # server.start_server()
+
+    cheating_server = CheatingWordleServer(max_attempt = 6, num_candidates=10)
+    cheating_server.start_server()
 
 if __name__ == "__main__":
     main()

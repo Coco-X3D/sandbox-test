@@ -84,6 +84,13 @@ class WordleTCPClient:
         self.socket.close()
         self.is_connected = False
         return response
+    def get_max_attempts(self):
+        response = self.send_command("MAX_ITER")
+        if response and response.isdigit():
+            return int(response)
+        else:
+            print(f"Failed to get max attempts: {response}")
+            return None
     
 
 
@@ -169,7 +176,7 @@ def main():
         return
 
     attempt_count = 0
-    MAX_ATTEMPTS = 6
+    MAX_ATTEMPTS = client.get_max_attempts()
     letter_tracker = LetterTracker()
     
     print(f"\n🎮 Game started! You have {MAX_ATTEMPTS} attempts to guess the word.")
