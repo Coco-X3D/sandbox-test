@@ -7,7 +7,7 @@ This game is very similar to one of my favorite games on the Nintendo Switch: Co
 ## Features
 
 - **Classic Wordle Game**: A faithful implementation of the original Wordle game mechanics in the console.
-- **Client-Server Architecture**: Play the game over a network. The server hosts the game logic, while the client provides the interface.
+- **Client-Server Architecture**: Play the game over a network through TCP. The server hosts the game logic, while the client provides the interface.
 - **Cheating Host Mode**: A special mode where the server can attempt to cheat by changing the target word after the client has started guessing. The client includes logic to detect this.
 
 ## Project Structure
@@ -30,6 +30,18 @@ Clone the repository:
 ```bash
 git clone https://github.com/Coco-X3D/sandbox-test.git
 cd sandbox-test
+```
+
+## Game Rules
+```
+1. Start the game by running the appropriate mode
+2. Enter your guess - a 5-letter English word
+3. Receive feedback:
+    🟩 Green background: Correct letter in correct position
+    🟨 Yellow background: Correct letter in wrong position
+    ⬜ Gray background: Letter not in the word
+4. Use the feedback to make your next guess
+5. Win by guessing the word within 6 attempts (Of course, you can change it as you like).
 ```
 
 ## How to run
@@ -59,10 +71,76 @@ Step 2: Connect the Client
 python client.py
 ```
 
-
-
-### An example in client side
+### 3. Host Cheating Mode
 ```bash
+# Using CheatingWordleServer() to replace WordleServer() in main() of server.py 
+# num_candiates indicates the number of words hold for cheating
+cheating_server = CheatingWordleServer(max_attempt = 6, num_candidates=10)
+cheating_server.start_server()
+```
+
+
+
+
+
+
+## An example
+```bash
+###            From Serve Side 
+###
+
+PS E:\sandbox-test> PYTHON .\server.py
+==================================================
+Wordle Game - TCP Server Mode
+==================================================
+This is SERVER mode - clients will connect to this server
+The answer is generated and validated on the server side
+==================================================
+Server started on localhost:8800
+Waiting for client connections...
+==================================================
+New connection from ('127.0.0.1', 55028)
+Received from ('127.0.0.1', 55028): START
+Created cheating session 0cd5bc11 with 10 candidates
+Initial candidates (10): ['maria', 'palau', 'madam', 'seize', 'discs', 'breed', 'depot', 'offer', 'roman', 'vivid']
+Received from ('127.0.0.1', 55028): MAX_ITER
+Received from ('127.0.0.1', 55028): GUESS:abuse
+📊 Worst score (H, P): (0, 0), Candidates: 1
+🔍 Candidates reduced to 1
+   Remaining: ['vivid']
+🔒 Final answer locked: vivid
+Received from ('127.0.0.1', 55028): GUESS:right
+📊 Worst score (H, P): (1, 0), Candidates: 1
+🔍 Candidates reduced to 1
+   Remaining: ['vivid']
+🔒 Final answer locked: vivid
+Received from ('127.0.0.1', 55028): GUESS:urban
+📊 Worst score (H, P): (0, 0), Candidates: 1
+🔍 Candidates reduced to 1
+   Remaining: ['vivid']
+🔒 Final answer locked: vivid
+Received from ('127.0.0.1', 55028): GUESS:opose
+Received from ('127.0.0.1', 55028): GUESS:upper
+📊 Worst score (H, P): (0, 0), Candidates: 1
+🔍 Candidates reduced to 1
+   Remaining: ['vivid']
+🔒 Final answer locked: vivid
+Received from ('127.0.0.1', 55028): GUESS:watch
+📊 Worst score (H, P): (0, 0), Candidates: 1
+🔍 Candidates reduced to 1
+   Remaining: ['vivid']
+🔒 Final answer locked: vivid
+Received from ('127.0.0.1', 55028): GUESS:lucky
+📊 Worst score (H, P): (0, 0), Candidates: 1
+🔍 Candidates reduced to 1
+   Remaining: ['vivid']
+🔒 Final answer locked: vivid
+Session 0cd5bc11 cleaned up
+Connection closed: ('127.0.0.1', 55028)
+
+###              From Client Side
+###
+
 E:\sandbox-test>python client.py
 ==================================================
 🎯 Wordle Game - TCP Client Mode
@@ -140,3 +218,10 @@ status of all letters:
 Game ended. Thanks for playing!
 ==================================================
 ``` 
+
+
+## License
+This project is licensed under the MIT License.
+
+## Contributing
+Contributions, issues, and feature requests are welcome! Feel free to check the issues page.
