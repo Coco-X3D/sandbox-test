@@ -11,13 +11,14 @@ This game is very similar to one of my favorite games on the Nintendo Switch: Co
 - **Cheating Host Mode**: A special mode where the server can attempt to cheat by changing the target word after the client has started guessing. The client includes logic to detect this.
 
 ## Project Structure
-
+```
 wordle-game/
 ├── server.py              # Main server implementation
 ├── client.py              # Client implementation
 ├── common_words.txt       # Word database
 ├── main_q1.txt            # The local implementation of Feature 1
-└── README.md              
+└── README.md
+```              
 
 ## Prerequisites
 
@@ -41,12 +42,12 @@ python main_q1.py
 ### 2. Client Server Game
 Step 1: Start the Server
 ```bash
- 
 # Open a new cmd/powershell window for running server
 # Please note that the standrad game server is created by the following lines in main():
 #    server = WordleServer(host='localhost', max_attempt=6, port=8800)
 #    server.start_server()
 
 python server.py
-
 ```
+
+### 
