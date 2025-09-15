@@ -41,12 +41,12 @@ python main_q1.py
 ### 2. Client Server Game
 Step 1: Start the Server
 ```bash
-''' 
-Open a new cmd/powershell window for running server
-Please note that the standrad game server is created by the following lines in main():
-    server = WordleServer(host='localhost', max_attempt=6, port=8800)
-    server.start_server()
-'''
+ 
+# Open a new cmd/powershell window for running server
+# Please note that the standrad game server is created by the following lines in main():
+#    server = WordleServer(host='localhost', max_attempt=6, port=8800)
+#    server.start_server()
+
 python server.py
 
 ```
