@@ -62,7 +62,7 @@ python client.py
 
 
 ### An example in client side
-'''
+```bash
 E:\sandbox-test>python client.py
 ==================================================
 🎯 Wordle Game - TCP Client Mode
@@ -139,4 +139,4 @@ status of all letters:
 ==================================================
 Game ended. Thanks for playing!
 ==================================================
-''' 
+``` 
